@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoinGo</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#eef2ff;
+  font-family:Arial,sans-serif;
+   display:flex;justify-content:center;
+    padding:25px 12px;
+    }
+    .app{
+     width:100%;max-width:390px;
+      background:white;border-radius:22px;
+       padding:25px;box-shadow:0 5px 25px #0002;
+       }
+       .logo{text-align:center;color:#5145cd;font-size:32px;font-weight:bold}
+       p{text-align:center;color:#777}
+       h2{text-align:center}
+       input,button{
+        width:100%;padding:14px;margin:8px 0;
+         border-radius:10px;border:1px solid #ddd;
+          font-size:16px;
+          }
+          button{background:#5145cd;color:white;border:0;font-weight:bold}
+          button.secondary{background:#e8e7ff;color:#5145cd}
+          .hidden{display:none}
+          .balance{
+           background:#5145cd;color:white;
+            padding:25px;border-radius:16px;text-align:center;
+            }
+            .balance h1{font-size:32px}
+            </style>
+            </head>
+            <body>
+            <div class="app">
+            <div class="logo">🪙 CoinGo</div>
+            <p>আপনার ডিজিটাল ডেমো ওয়ালেট</p>
+
+            <div id="auth">
+            <h2>অ্যাকাউন্ট তৈরি</h2>
+            <input id="name" placeholder="আপনার নাম">
+            <input id="phone" placeholder="মোবাইল নম্বর">
+            <input id="uid" placeholder="Free Fire UID">
+            <input id="email" type="email" placeholder="ইমেইল">
+            <input id="password" type="password" placeholder="পাসওয়ার্ড">
+            <button onclick="register()">রেজিস্ট্রেশন</button>
+            <hr>
+            <h2>লগইন</h2>
+            <input id="loginEmail" type="email" placeholder="ইমেইল">
+            <input id="loginPassword" type="password" placeholder="পাসওয়ার্ড">
+            <button onclick="login()">লগইন</button>
+            </div>
+
+            <div id="home" class="hidden">
+            <h2 id="welcome"></h2>
+            <div class="balance">
+            <p style="color:white">আপনার ডেমো কয়েন</p>
+            <h1 id="coins">0</h1>
+            </div>
+            <p>এটি শুধু পরীক্ষামূলক ডেমো ওয়ালেট।</p>
+            <button class="secondary" onclick="logout()">লগআউট</button>
+            </div>
+            </div>
+
+            <script>
+            let users = JSON.parse(localStorage.getItem("coingo_users") || "{}");
+            let current = localStorage.getItem("coingo_current");
+
+            function showHome(user){
+             document.getElementById("auth").classList.add("hidden");
+              document.getElementById("home").classList.remove("hidden");
+               document.getElementById("welcome").innerText="স্বাগতম, "+user.name;
+                document.getElementById("coins").innerText=user.coins;
+                }
+
+                function register(){
+                 let name=document.getElementById("name").value.trim();
+                  let phone=document.getElementById("phone").value.trim();
+                   let uid=document.getElementById("uid").value.trim();
+                    let email=document.getElementById("email").value.trim().toLowerCase();
+                     let password=document.getElementById("password").value;
+
+                      if(!name||!phone||!uid||!email||!password){
+                        alert("সব তথ্য পূরণ করুন");return;
+                         }
+                          if(password.length<6){
+                            alert("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে");return;
+                             }
+                              if(users[email]){
+                                alert("এই ইমেইলে অ্যাকাউন্ট আছে");return;
+                                 }
+                                  let user={name,phone,uid,coins:50000};
+                                   users[email]=user;
+                                    localStorage.setItem("coingo_users",JSON.stringify(users));
+                                     localStorage.setItem("coingo_current",email);
+                                      showHome(user);
+                                      }
+
+                                      function login(){
+                                       let email=document.getElementById("loginEmail").value.trim().toLowerCase();
+                                        let password=document.getElementById("loginPassword").value;
+                                         if(!users[email]){
+                                           alert("অ্যাকাউন্ট পাওয়া যায়নি");return;
+                                            }
+                                             alert("এটি স্থানীয় ডেমো। লগইনের জন্য রেজিস্ট্রেশন ব্যবহার করুন।");
+                                             }
+
+                                             function logout(){
+                                              localStorage.removeItem("coingo_current");
+                                               location.reload();
+                                               }
+
+                                               if(current && users[current]) showHome(users[current]);
+                                               </script>
+                                               </body>
+                                               </html>

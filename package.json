@@ -1,0 +1,337 @@
+{
+  "scripts": {
+    "start": "servor --reload"
+  },
+  "dependencies": {
+    "servor": "^4.0.2"
+  }
+}
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoinGo Wallet</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#f3f0ff;
+  font-family:Arial,sans-serif;color:#292044
+  }
+  header{
+   background:linear-gradient(135deg,#673de6,#a34be8);
+    color:white;padding:28px 20px;
+     border-radius:0 0 25px 25px
+     }
+     header h1{margin:0;font-size:28px}
+     main{padding:20px;max-width:480px;margin:auto}
+     .card{
+      background:white;padding:20px;border-radius:18px;
+       margin:15px 0;box-shadow:0 3px 15px #00000010
+       }
+       input{
+        width:100%;padding:13px;margin:8px 0;
+         border:1px solid #ddd;border-radius:10px;
+          font-size:16px
+          }
+          button{
+           width:100%;padding:14px;border:0;
+            border-radius:10px;background:#7045df;
+             color:white;font-size:16px;margin-top:10px
+             }
+             .balance{font-size:32px;font-weight:bold;color:#7045df}
+             .hidden{display:none}
+             .small{text-align:center;color:#777;font-size:13px}
+             </style>
+             </head>
+             <body>
+             <header>
+              <h1>🪙 CoinGo</h1>
+               <p>আপনার ডিজিটাল ডেমো ওয়ালেট</p>
+               </header>
+
+               <main>
+                <section id="auth">
+                  <div class="card">
+                     <h2>নতুন অ্যাকাউন্ট</h2>
+                        <input id="name" placeholder="আপনার নাম">
+                           <input id="phone" placeholder="মোবাইল নম্বর">
+                              <input id="uid" placeholder="Free Fire UID">
+                                 <input id="email" type="email" placeholder="ইমেইল">
+                                    <input id="password" type="password"
+                                        placeholder="পাসওয়ার্ড">
+                                           <button onclick="register()">রেজিস্ট্রেশন</button>
+                                              <hr>
+                                                 <h3>আগে অ্যাকাউন্ট আছে?</h3>
+                                                    <input id="loginEmail" type="email"
+                                                        placeholder="ইমেইল">
+                                                           <input id="loginPassword" type="password"
+                                                               placeholder="পাসওয়ার্ড">
+                                                                  <button onclick="login()">লগইন</button>
+                                                                    </div>
+                                                                     </section>
+
+                                                                      <section id="home" class="hidden">
+                                                                        <div class="card">
+                                                                           <h2>স্বাগতম, <span id="userName"></span></h2>
+                                                                              <p>আপনার ডেমো ব্যালেন্স</p>
+                                                                                 <div class="balance" id="balance">0 Coins</div>
+                                                                                   </div>
+                                                                                     <div class="card">
+                                                                                        <h3>আপনার অ্যাকাউন্ট</h3>
+                                                                                           <p id="userEmail"></p>
+                                                                                              <p id="userPhone"></p>
+                                                                                                 <button onclick="logout()">লগআউট</button>
+                                                                                                   </div>
+                                                                                                    </section>
+                                                                                                     <p class="small">CoinGo Demo Wallet · বাস্তব টাকা নয়</p>
+                                                                                                     </main>
+
+                                                                                                     <script type="module">
+                                                                                                     import { initializeApp }
+                                                                                                      from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+                                                                                                      import {
+                                                                                                       getAuth,createUserWithEmailAndPassword,
+                                                                                                        signInWithEmailAndPassword,signOut
+                                                                                                        } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+                                                                                                        import {
+                                                                                                         getFirestore,doc,setDoc,getDoc
+                                                                                                         } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
+                                                                                                         const firebaseConfig = {
+                                                                                                          apiKey: "আপনার_API_KEY",
+                                                                                                           authDomain: "coingo-6ea0c.firebaseapp.com",
+                                                                                                            projectId: "coingo-6ea0c",
+                                                                                                             storageBucket: "coingo-6ea0c.firebasestorage.app",
+                                                                                                              messagingSenderId: "734462727128",
+                                                                                                               appId: "1:734462727128:web:15e9fc0bf76056b8fc98ad"
+                                                                                                               };
+
+                                                                                                               const app=initializeApp(firebaseConfig);
+                                                                                                               const auth=getAuth(app);
+                                                                                                               const db=getFirestore(app);
+
+                                                                                                               window.register=async()=>{
+                                                                                                                try{
+                                                                                                                  const name=document.getElementById("name").value.trim();
+                                                                                                                    const phone=document.getElementById("phone").value.trim();
+                                                                                                                      const uid=document.getElementById("uid").value.trim();
+                                                                                                                        const email=document.getElementById("email").value.trim();
+                                                                                                                          const password=document.getElementById("password").value;
+
+                                                                                                                            if(!name||!phone||!uid||!email||password.length<6){
+                                                                                                                               alert("সব তথ্য দিন। পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।");
+                                                                                                                                  return;
+                                                                                                                                    }
+
+                                                                                                                                      const result=await createUserWithEmailAndPassword(auth,email,password);
+                                                                                                                                        await setDoc(doc(db,"users",result.user.uid),{
+                                                                                                                                           name,phone,freeFireUid:uid,
+                                                                                                                                              balance:50000,
+                                                                                                                                                 createdAt:new Date()
+                                                                                                                                                   });
+
+                                                                                                                                                     alert("অ্যাকাউন্ট তৈরি হয়েছে!");
+                                                                                                                                                      }catch(e){alert("সমস্যা: "+e.message)}
+                                                                                                                                                      };
+
+                                                                                                                                                      window.login=async()=>{
+                                                                                                                                                       try{
+                                                                                                                                                         await signInWithEmailAndPassword(
+                                                                                                                                                            auth,
+                                                                                                                                                               document.getElementById("loginEmail").value,
+                                                                                                                                                                  document.getElementById("loginPassword").value
+                                                                                                                                                                    );
+                                                                                                                                                                     }catch(e){alert("লগইন হয়নি: "+e.message)}
+                                                                                                                                                                     };
+
+                                                                                                                                                                     window.logout=()=>signOut(auth);
+
+                                                                                                                                                                     auth.onAuthStateChanged(async user=>{
+                                                                                                                                                                      const authBox=document.getElementById("auth");
+                                                                                                                                                                       const home=document.getElementById("home");
+                                                                                                                                                                        if(!user){
+                                                                                                                                                                          authBox.classList.remove("hidden");
+                                                                                                                                                                            home.classList.add("hidden");
+                                                                                                                                                                              return;
+                                                                                                                                                                               }
+                                                                                                                                                                                const snap=await getDoc(doc(db,"users",user.uid));
+                                                                                                                                                                                 if(!snap.exists())return;
+                                                                                                                                                                                  const data=snap.data();
+                                                                                                                                                                                   authBox.classList.add("hidden");
+                                                                                                                                                                                    home.classList.remove("hidden");
+                                                                                                                                                                                     document.getElementById("userName").textContent=data.name;
+                                                                                                                                                                                      document.getElementById("userEmail").textContent=user.email;
+                                                                                                                                                                                       document.getElementById("userPhone").textContent=data.phone;
+                                                                                                                                                                                        document.getElementById("balance").textContent=
+                                                                                                                                                                                          Number(data.balance).toLocaleString()+" Coins";
+                                                                                                                                                                                          });
+                                                                                                                                                                                          </script>
+                                                                                                                                                                                          </body>
+                                                                                                                                                                                          </html>
+
+                                                                                                                                                                                          <!DOCTYPE html>
+                                                                                                                                                                                          <html lang="bn">
+                                                                                                                                                                                          <head>
+                                                                                                                                                                                          <meta charset="UTF-8">
+                                                                                                                                                                                          <meta name="viewport" content="width=device-width, initial-scale=1">
+                                                                                                                                                                                          <title>CoinGo Wallet</title>
+                                                                                                                                                                                          <style>
+                                                                                                                                                                                          *{box-sizing:border-box}
+                                                                                                                                                                                          body{
+                                                                                                                                                                                           margin:0;background:#f3f0ff;
+                                                                                                                                                                                            font-family:Arial,sans-serif;color:#292044
+                                                                                                                                                                                            }
+                                                                                                                                                                                            header{
+                                                                                                                                                                                             background:linear-gradient(135deg,#673de6,#a34be8);
+                                                                                                                                                                                              color:white;padding:28px 20px;
+                                                                                                                                                                                               border-radius:0 0 25px 25px
+                                                                                                                                                                                               }
+                                                                                                                                                                                               header h1{margin:0;font-size:28px}
+                                                                                                                                                                                               main{padding:20px;max-width:480px;margin:auto}
+                                                                                                                                                                                               .card{
+                                                                                                                                                                                                background:white;padding:20px;border-radius:18px;
+                                                                                                                                                                                                 margin:15px 0;box-shadow:0 3px 15px #00000010
+                                                                                                                                                                                                 }
+                                                                                                                                                                                                 input{
+                                                                                                                                                                                                  width:100%;padding:13px;margin:8px 0;
+                                                                                                                                                                                                   border:1px solid #ddd;border-radius:10px;
+                                                                                                                                                                                                    font-size:16px
+                                                                                                                                                                                                    }
+                                                                                                                                                                                                    button{
+                                                                                                                                                                                                     width:100%;padding:14px;border:0;
+                                                                                                                                                                                                      border-radius:10px;background:#7045df;
+                                                                                                                                                                                                       color:white;font-size:16px;margin-top:10px
+                                                                                                                                                                                                       }
+                                                                                                                                                                                                       .balance{font-size:32px;font-weight:bold;color:#7045df}
+                                                                                                                                                                                                       .hidden{display:none}
+                                                                                                                                                                                                       .small{text-align:center;color:#777;font-size:13px}
+                                                                                                                                                                                                       </style>
+                                                                                                                                                                                                       </head>
+                                                                                                                                                                                                       <body>
+                                                                                                                                                                                                       <header>
+                                                                                                                                                                                                        <h1>🪙 CoinGo</h1>
+                                                                                                                                                                                                         <p>আপনার ডিজিটাল ডেমো ওয়ালেট</p>
+                                                                                                                                                                                                         </header>
+
+                                                                                                                                                                                                         <main>
+                                                                                                                                                                                                          <section id="auth">
+                                                                                                                                                                                                            <div class="card">
+                                                                                                                                                                                                               <h2>নতুন অ্যাকাউন্ট</h2>
+                                                                                                                                                                                                                  <input id="name" placeholder="আপনার নাম">
+                                                                                                                                                                                                                     <input id="phone" placeholder="মোবাইল নম্বর">
+                                                                                                                                                                                                                        <input id="uid" placeholder="Free Fire UID">
+                                                                                                                                                                                                                           <input id="email" type="email" placeholder="ইমেইল">
+                                                                                                                                                                                                                              <input id="password" type="password"
+                                                                                                                                                                                                                                  placeholder="পাসওয়ার্ড">
+                                                                                                                                                                                                                                     <button onclick="register()">রেজিস্ট্রেশন</button>
+                                                                                                                                                                                                                                        <hr>
+                                                                                                                                                                                                                                           <h3>আগে অ্যাকাউন্ট আছে?</h3>
+                                                                                                                                                                                                                                              <input id="loginEmail" type="email"
+                                                                                                                                                                                                                                                  placeholder="ইমেইল">
+                                                                                                                                                                                                                                                     <input id="loginPassword" type="password"
+                                                                                                                                                                                                                                                         placeholder="পাসওয়ার্ড">
+                                                                                                                                                                                                                                                            <button onclick="login()">লগইন</button>
+                                                                                                                                                                                                                                                              </div>
+                                                                                                                                                                                                                                                               </section>
+
+                                                                                                                                                                                                                                                                <section id="home" class="hidden">
+                                                                                                                                                                                                                                                                  <div class="card">
+                                                                                                                                                                                                                                                                     <h2>স্বাগতম, <span id="userName"></span></h2>
+                                                                                                                                                                                                                                                                        <p>আপনার ডেমো ব্যালেন্স</p>
+                                                                                                                                                                                                                                                                           <div class="balance" id="balance">0 Coins</div>
+                                                                                                                                                                                                                                                                             </div>
+                                                                                                                                                                                                                                                                               <div class="card">
+                                                                                                                                                                                                                                                                                  <h3>আপনার অ্যাকাউন্ট</h3>
+                                                                                                                                                                                                                                                                                     <p id="userEmail"></p>
+                                                                                                                                                                                                                                                                                        <p id="userPhone"></p>
+                                                                                                                                                                                                                                                                                           <button onclick="logout()">লগআউট</button>
+                                                                                                                                                                                                                                                                                             </div>
+                                                                                                                                                                                                                                                                                              </section>
+                                                                                                                                                                                                                                                                                               <p class="small">CoinGo Demo Wallet · বাস্তব টাকা নয়</p>
+                                                                                                                                                                                                                                                                                               </main>
+
+                                                                                                                                                                                                                                                                                               <script type="module">
+                                                                                                                                                                                                                                                                                               import { initializeApp }
+                                                                                                                                                                                                                                                                                                from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+                                                                                                                                                                                                                                                                                                import {
+                                                                                                                                                                                                                                                                                                 getAuth,createUserWithEmailAndPassword,
+                                                                                                                                                                                                                                                                                                  signInWithEmailAndPassword,signOut
+                                                                                                                                                                                                                                                                                                  } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+                                                                                                                                                                                                                                                                                                  import {
+                                                                                                                                                                                                                                                                                                   getFirestore,doc,setDoc,getDoc
+                                                                                                                                                                                                                                                                                                   } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
+                                                                                                                                                                                                                                                                                                   const firebaseConfig = {
+                                                                                                                                                                                                                                                                                                    apiKey: "আপনার_API_KEY",
+                                                                                                                                                                                                                                                                                                     authDomain: "coingo-6ea0c.firebaseapp.com",
+                                                                                                                                                                                                                                                                                                      projectId: "coingo-6ea0c",
+                                                                                                                                                                                                                                                                                                       storageBucket: "coingo-6ea0c.firebasestorage.app",
+                                                                                                                                                                                                                                                                                                        messagingSenderId: "734462727128",
+                                                                                                                                                                                                                                                                                                         appId: "1:734462727128:web:15e9fc0bf76056b8fc98ad"
+                                                                                                                                                                                                                                                                                                         };
+
+                                                                                                                                                                                                                                                                                                         const app=initializeApp(firebaseConfig);
+                                                                                                                                                                                                                                                                                                         const auth=getAuth(app);
+                                                                                                                                                                                                                                                                                                         const db=getFirestore(app);
+
+                                                                                                                                                                                                                                                                                                         window.register=async()=>{
+                                                                                                                                                                                                                                                                                                          try{
+                                                                                                                                                                                                                                                                                                            const name=document.getElementById("name").value.trim();
+                                                                                                                                                                                                                                                                                                              const phone=document.getElementById("phone").value.trim();
+                                                                                                                                                                                                                                                                                                                const uid=document.getElementById("uid").value.trim();
+                                                                                                                                                                                                                                                                                                                  const email=document.getElementById("email").value.trim();
+                                                                                                                                                                                                                                                                                                                    const password=document.getElementById("password").value;
+
+                                                                                                                                                                                                                                                                                                                      if(!name||!phone||!uid||!email||password.length<6){
+                                                                                                                                                                                                                                                                                                                         alert("সব তথ্য দিন। পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।");
+                                                                                                                                                                                                                                                                                                                            return;
+                                                                                                                                                                                                                                                                                                                              }
+
+                                                                                                                                                                                                                                                                                                                                const result=await createUserWithEmailAndPassword(auth,email,password);
+                                                                                                                                                                                                                                                                                                                                  await setDoc(doc(db,"users",result.user.uid),{
+                                                                                                                                                                                                                                                                                                                                     name,phone,freeFireUid:uid,
+                                                                                                                                                                                                                                                                                                                                        balance:50000,
+                                                                                                                                                                                                                                                                                                                                           createdAt:new Date()
+                                                                                                                                                                                                                                                                                                                                             });
+
+                                                                                                                                                                                                                                                                                                                                               alert("অ্যাকাউন্ট তৈরি হয়েছে!");
+                                                                                                                                                                                                                                                                                                                                                }catch(e){alert("সমস্যা: "+e.message)}
+                                                                                                                                                                                                                                                                                                                                                };
+
+                                                                                                                                                                                                                                                                                                                                                window.login=async()=>{
+                                                                                                                                                                                                                                                                                                                                                 try{
+                                                                                                                                                                                                                                                                                                                                                   await signInWithEmailAndPassword(
+                                                                                                                                                                                                                                                                                                                                                      auth,
+                                                                                                                                                                                                                                                                                                                                                         document.getElementById("loginEmail").value,
+                                                                                                                                                                                                                                                                                                                                                            document.getElementById("loginPassword").value
+                                                                                                                                                                                                                                                                                                                                                              );
+                                                                                                                                                                                                                                                                                                                                                               }catch(e){alert("লগইন হয়নি: "+e.message)}
+                                                                                                                                                                                                                                                                                                                                                               };
+
+                                                                                                                                                                                                                                                                                                                                                               window.logout=()=>signOut(auth);
+
+                                                                                                                                                                                                                                                                                                                                                               auth.onAuthStateChanged(async user=>{
+                                                                                                                                                                                                                                                                                                                                                                const authBox=document.getElementById("auth");
+                                                                                                                                                                                                                                                                                                                                                                 const home=document.getElementById("home");
+                                                                                                                                                                                                                                                                                                                                                                  if(!user){
+                                                                                                                                                                                                                                                                                                                                                                    authBox.classList.remove("hidden");
+                                                                                                                                                                                                                                                                                                                                                                      home.classList.add("hidden");
+                                                                                                                                                                                                                                                                                                                                                                        return;
+                                                                                                                                                                                                                                                                                                                                                                         }
+                                                                                                                                                                                                                                                                                                                                                                          const snap=await getDoc(doc(db,"users",user.uid));
+                                                                                                                                                                                                                                                                                                                                                                           if(!snap.exists())return;
+                                                                                                                                                                                                                                                                                                                                                                            const data=snap.data();
+                                                                                                                                                                                                                                                                                                                                                                             authBox.classList.add("hidden");
+                                                                                                                                                                                                                                                                                                                                                                              home.classList.remove("hidden");
+                                                                                                                                                                                                                                                                                                                                                                               document.getElementById("userName").textContent=data.name;
+                                                                                                                                                                                                                                                                                                                                                                                document.getElementById("userEmail").textContent=user.email;
+                                                                                                                                                                                                                                                                                                                                                                                 document.getElementById("userPhone").textContent=data.phone;
+                                                                                                                                                                                                                                                                                                                                                                                  document.getElementById("balance").textContent=
+                                                                                                                                                                                                                                                                                                                                                                                    Number(data.balance).toLocaleString()+" Coins";
+                                                                                                                                                                                                                                                                                                                                                                                    });
+                                                                                                                                                                                                                                                                                                                                                                                    </script>
+                                                                                                                                                                                                                                                                                                                                                                                    </body>
+                                                                                                                                                                                                                                                                                                                                                                                    </html>
+                                                                                                                                                                                                                                                                                                                                                                                    
